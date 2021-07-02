@@ -6,7 +6,7 @@ This is the backend of the BB Foundry Test app. It comprises of three main endpo
 - `/clients`
 - `/engagements`
 
-Each of the specs can be found [here]()
+Each of the specs can be found below.
 
 # Setup
 
