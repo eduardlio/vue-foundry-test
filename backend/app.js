@@ -4,6 +4,7 @@ const registerClientRoutes = require('./routes/clients')
 const registerEngagementRoutes = require('./routes/engagements')
 
 const app = express()
+app.use(express.json())
 
 registerEmployeeRoutes(app)
 registerClientRoutes(app)
