@@ -12,11 +12,22 @@ router.get('/', async (req, res) => {
 
 router.get('/:id', async (req, res) => {
   const id = req.params.id
-  const client = await dbClient.getByID(TABLE_NAME, id)
-  res.json(client)
+  try {
+    const engagement = await dbClient.getByID(TABLE_NAME, id)
+    res.json(engagement)
+  } catch(err) {
+    switch(err.code){
+      case 404:
+        res.status(404).json(err)
+        break;
+      default:
+        res.status(400).json(err)
+        break;
+    }
+  }
 })
 
-router.post('/start', async(req, res) => {
+router.post('/', async(req, res) => {
   const {
     name,
     client,
@@ -28,14 +39,22 @@ router.post('/start', async(req, res) => {
     return;
   }
   try {
-    const created = await dbClient.createOne(TABLE_NAME, {
+    const startDate = new Date().toISOString()
+    const createdId = await dbClient.createOne(TABLE_NAME, {
       name,
       client,
       employee,
-      started: new Date().toISOString(),
+      started: startDate,
       description: description || ''
     })
-    res.json({ created})
+    res.json({
+      id: createdId,
+      name,
+      client,
+      employee,
+      started: startDate,
+      description
+    })
   } catch(err) {
     res.json(new BadRequestError(err))
   }
@@ -62,11 +81,25 @@ router.put('/:id/end', async(req, res) => {
 router.put('/:id', async(req, res) => {
   const id = req.params.id;
   const updates = req.body
-  try{
+  try {
+    if(updates.id
+      || updates.client
+      || updates.employee
+      || updates.started
+      || updates.ended){
+      throw new BadRequestException("Only name and description are editable fields")
+    }
     await dbClient.updateOne(TABLE_NAME, id, updates)
     res.json({ updated: id })
   } catch(err) {
-    res.json(new BadRequestError(err))
+    switch(err.code){
+      case 404:
+        res.status(404).json(err)
+        break;
+      default:
+        res.status(400).json(err)
+        break;
+    }
   }
 })
 

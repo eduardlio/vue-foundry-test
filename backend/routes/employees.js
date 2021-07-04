@@ -1,6 +1,6 @@
 const { Router } = require('express')
 const dbClient = require('../db')
-const { BadRequestError } = require('../utils/errors')
+const { NotFoundError, BadRequestError } = require('../utils/errors')
 const router = Router()
 
 const TABLE_NAME = 'employees'
@@ -24,8 +24,19 @@ router.get('/:id/engagements', async (req, res) => {
 
 router.get('/:id', async (req, res) => {
   const id = req.params.id
-  const client = await dbClient.getByID(TABLE_NAME, id)
-  res.json(client)
+  try {
+    const employee = await dbClient.getByID(TABLE_NAME, id)
+    res.json(employee)
+  } catch(err) {
+    switch(err.code){
+      case 404:
+        res.status(404).json(err)
+        break;
+      default:
+        res.status(400).json(err)
+        break;
+    }
+  }
 })
 
 router.post('/', async(req, res) => {
@@ -35,8 +46,11 @@ router.post('/', async(req, res) => {
     return;
   }
   try {
-    const created = await dbClient.createOne(TABLE_NAME, { name })
-    res.json({created})
+    const createdId = await dbClient.createOne(TABLE_NAME, { name })
+    res.json({
+      id: createdId,
+      name
+    })
   } catch(err) {
     res.json(new BadRequestError(err))
   }
@@ -47,7 +61,8 @@ router.put('/:id', async(req, res) => {
   const id = req.params.id;
   const updates = req.body
   try{
-    await dbClient.updateOne(TABLE_NAME, id, updates)
+    const result = await dbClient.updateOne(TABLE_NAME, id, updates)
+    console.log(result)
     res.json({ updated: id })
   } catch(err) {
     res.json(new BadRequestError(err))

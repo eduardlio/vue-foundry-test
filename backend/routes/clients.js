@@ -24,8 +24,19 @@ router.get('/:id/engagements', async (req, res) => {
 
 router.get('/:id', async (req, res) => {
   const id = req.params.id
-  const client = await dbClient.getByID(TABLE_NAME, id)
-  res.json(client)
+  try {
+    const client = await dbClient.getByID(TABLE_NAME, id)
+    res.json(client)
+  } catch(err) {
+    switch(err.code){
+      case 404:
+        res.status(404).json(err)
+        break;
+      default:
+        res.status(400).json(err)
+        break;
+    }
+  }
 })
 
 router.post('/', async(req, res) => {

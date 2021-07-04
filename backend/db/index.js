@@ -1,5 +1,6 @@
 const sqlite3 = require('sqlite3').verbose()
-const {v4} = require('uuid')
+const { v4 } = require('uuid')
+const { NotFoundError } = require('../utils/errors')
 
 const tables = {
   employees: {
@@ -115,7 +116,11 @@ class DbClient {
         if(err) {
           reject(err)
         } else {
-          resolve(row)
+          if(!row) {
+            reject(new NotFoundError())
+          } else {
+            resolve(row)
+          }
         }
       })
     })

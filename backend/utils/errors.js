@@ -1,7 +1,7 @@
 class Error {
   constructor(message = "Error occurred") {
     this.message = message;
-    this.code = 500
+    this.code = 400
   }
 }
 class BadRequestError extends Error {
@@ -10,7 +10,14 @@ class BadRequestError extends Error {
     this.code = 400
   }
 }
+class NotFoundError extends Error {
+  constructor(message = "Not Found") {
+    super(message)
+    this.code = 404
+  }
+}
 module.exports = {
   Error,
-  BadRequestError
+  BadRequestError,
+  NotFoundError,
 }
