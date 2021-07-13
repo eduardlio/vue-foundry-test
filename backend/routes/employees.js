@@ -1,74 +1,48 @@
 const { Router } = require('express')
-const dbClient = require('../db')
-const { NotFoundError, BadRequestError } = require('../utils/errors')
+
+const { BadRequestError } = require('../utils/errors')
+
 const router = Router()
+const { employeeService } = require('../controller')
 
-const TABLE_NAME = 'employees'
-
-router.get('/', async (req, res) => {
-  const all = await dbClient.getAll(TABLE_NAME)
-  res.json(all)
+router.get('/', (req, res) => {
+  res.json(employeeService.getAll())
 })
 
-router.get('/:id/engagements', async (req, res) => {
+router.get('/:id/engagements', (req, res) => {
   const id = req.params.id;
-  try{
-    const engagements = await dbClient.all('select * from engagements where employee = :id', {
-      ':id': id
-    })
-    res.json(engagements)
-  } catch (err) {
-    res.json(new BadRequestError(err))
-  }
+  res.json(employeeService.getEngagements(id))
 })
 
-router.get('/:id', async (req, res) => {
+router.get('/:id', (req, res) => {
   const id = req.params.id
-  try {
-    const employee = await dbClient.getByID(TABLE_NAME, id)
-    res.json(employee)
-  } catch(err) {
-    switch(err.code){
-      case 404:
-        res.status(404).json(err)
-        break;
-      default:
-        res.status(400).json(err)
-        break;
-    }
-  }
+  res.json(employeeService.getOne(id))
 })
 
-router.post('/', async(req, res) => {
+router.post('/', (req, res) => {
   const name = req.body.name
+
   if(!name) {
     res.status(400).json(new BadRequestError())
     return;
   }
-  try {
-    const createdId = await dbClient.createOne(TABLE_NAME, { name })
-    res.json({
-      id: createdId,
-      name
-    })
-  } catch(err) {
-    res.json(new BadRequestError(err))
-  }
+
+  res.json(employeeService.create(name))
 
 })
 
-router.put('/:id', async(req, res) => {
+router.put('/:id', (req, res) => {
   const id = req.params.id;
   const updates = req.body
-  try{
-    const result = await dbClient.updateOne(TABLE_NAME, id, updates)
-    console.log(result)
-    res.json({ updated: id })
-  } catch(err) {
-    res.json(new BadRequestError(err))
-  }
+
+  res.json(employeeService.update(id, updates.name))
+
 })
 
+router.delete('/:id', (req, res) => {
+  const id = req.params.id;
+  res.json(employeeService.delete(id))
+})
 
 module.exports = (app) => {
   app.use('/employees', router)
