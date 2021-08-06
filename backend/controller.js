@@ -30,7 +30,7 @@ class CRUDController {
     const target = this.getOne(id)
     if(!target || target.length == 0) return {error: `ID ${id} not found`};
     const index = this.rows.findIndex(r => r.id === id)
-    this.rows[index].name === !!name ? name : this.rows[index].name
+    this.rows[index].name = !!name ? name : this.rows[index].name
     return { updated: id }
   }
 }
