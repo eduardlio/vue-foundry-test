@@ -5,14 +5,14 @@ class CRUDController {
     this.rows = []
   }
   getOne(id) {
-    return this.rows.find((item) => item.id === id)
+    return this.rows.find((item) => item.id === id.trim())
   }
   getAll() {
     return this.rows
   }
   delete(id) {
     const target = this.getOne(id)
-    if(!target) return;
+    if(!target || target.length == 0) return {error: `ID ${id} not found`};
     this.rows = this.rows
       .filter(item => item.id !== id)
     return { deleted: id }
@@ -28,13 +28,9 @@ class CRUDController {
   }
   update(id, name) {
     const target = this.getOne(id)
-    if(!target) return;
-    this.rows = this.rows
-      .map(item => {
-        return item.id === id
-          ? { ...item, name }
-          : item
-      })
+    if(!target || target.length == 0) return {error: `ID ${id} not found`};
+    const index = this.rows.findIndex(r => r.id === id)
+    this.rows[index].name === !!name ? name : this.rows[index].name
     return { updated: id }
   }
 }
@@ -64,7 +60,7 @@ class EngagementController extends CRUDController {
   }
   update(id, name = '', description = ''){
     const target = this.getOne(id)
-    if(!target) return;
+    if(!target || target.length == 0) return {error: `ID ${id} not found`};
     this.rows = this.rows
       .map(item => {
         return item.id === id
@@ -78,7 +74,7 @@ class EngagementController extends CRUDController {
   }
   end(id) {
     const target = this.getOne(id)
-    if(!target) return;
+    if(!target || target.length == 0) return {error: `ID ${id} not found`};
     if(!!target.ended) return { updated: id };
     this.rows = this.rows
       .map(item => {
